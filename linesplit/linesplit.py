@@ -22,7 +22,7 @@ class Line(object):
 
 
 def extract_lines(mkv_obj):
-    subs_path = mkv_obj.dirpath + "/" + mkv_obj.filename + ".srt"
+    subs_path = os.path.join(mkv_obj.dirpath, mkv_obj.filename) + ".srt"
 
     lines = []
     subs = pysubs2.load(subs_path, encoding="utf-8")
@@ -132,8 +132,10 @@ class MKVFile(object):
                 track_map[track_obj.type].append(track_obj)
 
     def extract_audio_and_subs(self):
+        print("Extracting audio and subtitle")
+
         # Commandline arguments for extracting audio and subtitles from the mkv file
-        command = [cli_args.mkvextract_bin, self.dirpath + "/" + self.filename, "tracks", str(self.audio_tracks[0].id) + ":" + self.filename + ".wav", str(self.subtitle_tracks[0].id) + ":" + self.filename + ".srt"]
+        command = [cli_args.mkvextract_bin, str(os.path.join(self.dirpath, self.filename)), "tracks", str(self.audio_tracks[0].id) + ":" + str(os.path.join(self.dirpath, self.filename)) + ".wav", str(self.subtitle_tracks[0].id) + ":" + str(os.path.join(self.dirpath, self.filename)) + ".srt"]
 
         # Ask mkvextract to do the extracting command
         process = subprocess.Popen(command, stdout=subprocess.PIPE)
@@ -146,7 +148,7 @@ class MKVFile(object):
 
         for line in tqdm(lines):
             # Commandline arguments for splitting audio from the mkv audio
-            command = [cli_args.mkvmerge_bin, self.dirpath + "/" + self.filename + ".wav", "-o", self.dirpath + "/" + self.filename_without_extension + "/" + line.subtitle_dialogue + ".wav", "--split", "parts:" + line.start_timestamp + "-" + line.end_timestamp]
+            command = [cli_args.mkvmerge_bin, os.path.join(self.dirpath, self.filename) + ".wav", "-o", os.path.join(self.dirpath, self.filename_without_extension, line.subtitle_dialogue) + ".wav", "--split", "parts:" + line.start_timestamp + "-" + line.end_timestamp]
 
             # Ask mkvmerge to do the splitting command
             process = subprocess.Popen(command, stdout=subprocess.PIPE)
@@ -157,19 +159,19 @@ class MKVFile(object):
                 # raise RuntimeError("[Error {}] mkvmerge failed to split lines: {}".format(process.returncode, self.filename))
             
         # remove the extracted files
-        remove_file(self.dirpath + "/" + self.filename + ".wav")
-        remove_file(self.dirpath + "/" + self.filename + ".srt")
+        remove_file(os.path.join(self.dirpath, self.filename) + ".wav")
+        remove_file(os.path.join(self.dirpath, self.filename) + ".srt")
 
         print("==== Finished!! ====")
     
 @catch_interrupt
 def main(params=None):
     parser = argparse.ArgumentParser(description="Strips lines according to timestamps.")
-    parser.add_argument("path", action=RealPath,
+    parser.add_argument("path", action=RealPath, metavar="mkv-path",
                         help="Where your MKV files are stored. Can be a directory or a file.")
-    parser.add_argument("-m", "--mkvmerge-bin", action="store", metavar="path", required=True,
+    parser.add_argument("-m", "--mkvmerge-bin", action="store", metavar="mkvmerge-path", required=True,
                         help="The path to the MKVMerge executable.")
-    parser.add_argument("-x", "--mkvextract-bin", action="store", metavar="path", required=True,
+    parser.add_argument("-x", "--mkvextract-bin", action="store", metavar="mkvextract-path", required=True,
                         help="The path to the MKVExtract executable.")
 
     # Parse the list of given arguments
