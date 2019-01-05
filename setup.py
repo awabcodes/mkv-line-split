@@ -8,6 +8,7 @@ setuptools.setup(
     version="1.0.0",
     author="Awab Abdoun",
     author_email="awabcodes@gmail.com",
+    LICENSE="MIT",
     description="Script to split audio lines from .mkv files according to the subtitle",
     long_description=long_description,
     long_description_content_type="text/markdown",
