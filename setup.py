@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mkv-line-split",
-    version="1.0.1",
+    version="1.0.2",
     author="Awab Abdoun",
     author_email="awabcodes@gmail.com",
     LICENSE="MIT",
